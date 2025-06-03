@@ -30,22 +30,26 @@ Before you begin, ensure you have the following:
 
 ### **Project Setup**
 
-1. Set your Google Cloud Project ID and Location:  
-   Update the PROJECT\_ID and LOCATION variables in the events\_agent\_adk\_latest.py file:  
+1. Copy .env.example file as .env 
+
+    Set your Google Cloud Project ID and Location:  
+   Update the PROJECT\_ID and LOCATION variables in the .env file:  
    PROJECT\_ID \= "Project_id"  \# Replace with your GCP Project ID  
    LOCATION \= "us-central1" \# Replace with your preferred GCP region
 
 2. BigQuery Table Configuration:  
-   Ensure you have a BigQuery dataset and table created for storing event data. Update the table\_id variable in the insert\_to\_bq function with your BigQuery table path:  
+   Ensure you have a BigQuery dataset and table created for storing event data. Update the table\_id variable in the in .env with your BigQuery table path:  
    \# Example: table\_id \= "your-gcp-project-id.your\_bigquery\_dataset.events\_agent"  
 
    The table schema should be compatible with the Event output schema, including columns for destination, name, description, start\_date, end\_date, location, url, and category.
+
+3. Update the places API key in .env. We use Places env to create unique_id for eah event based on location, start_date and end_date
 
 ### **Installing Libraries**
 
 Install the necessary Python libraries using pip:
 
-\!pip install google-adk google-cloud-bigquery
+\pip install -r requirements.text
 
 ## **Agent Details**
 
@@ -95,10 +99,6 @@ To run the agent and insert data into BigQuery:
    events\_json \= events\_json.lstrip("\`\`\`json").rstrip("\`\`\`")  
    json\_data \= json.loads(events\_json)  
    insert\_to\_bq(table\_id, json\_data)
-
-   The call\_agent function also has examples of direct text queries:  
-   \# await call\_agent("what are the events in October?")  
-   \# await call\_agent("when are where is Grand Prix?")
 
 ## **License**
 
