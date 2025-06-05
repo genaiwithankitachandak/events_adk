@@ -28,9 +28,7 @@ LLM_AGENT_PROMPT = """
                 end_date: event start date in mm/dd/yy format,
                 location: exact location of the event with maps link,
                 url: event page url link,
-                category: event category,
-                extimated_number_of_people: number of prople estimated to attend,
-                popluarity_score: popularity of the event.
+                category: event category
             }}
             ]
         }}
