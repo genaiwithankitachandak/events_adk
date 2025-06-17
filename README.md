@@ -12,10 +12,10 @@ This repository contains the code for an Events Agent, designed to provide infor
 
 ## **Architecture Diagram**
 
-<img src="agent_architecture.png" alt="Event Multi-Agent Architecture" width="800"/>
+<img src="misc/agent_architecture.png" alt="Event Multi-Agent Architecture" width="800"/>
 
 ### Component Details
-<img src="event_agents.png" alt="Event Multi-Agent Architecture" width="800"/>
+<img src="misc/events_architecture.png" alt="Event Multi-Agent Architecture" width="800"/>
 
 ## **Setup and Installation**
 
