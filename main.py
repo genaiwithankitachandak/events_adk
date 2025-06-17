@@ -13,18 +13,30 @@
 # limitations under the License.
 
 import os
-import requests
 
-places_API_key = os.getenv("GOOGLE_PLACES_API_KEY")
+import uvicorn
+from google.adk.cli.fast_api import get_fast_api_app
+from utils.bq_ops import BQOps
+import json
+import asyncio
+from utils.agent_session import call_agent
+import logging
 
-def get_place_id(location):
-  # Find a place using Text Search
-  url = f"https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input={location}&inputtype=textquery&fields=place_id&key={places_API_key}"
-  response = requests.get(url).json()
+bq_ops = BQOps()
 
-  if response['status'] == 'OK':
-      place_id = response['candidates'][0]['place_id']
+logging.getLogger().setLevel(logging.INFO)
 
-      return place_id
-  else:
-      print("Error finding place")
+
+async def main():
+    payload = {
+        "destination": "SEA",
+        "start_date": "07/15/2025",
+        "end_date": "07/31/2025"
+    }
+    events_json = await call_agent(str(json.dumps(payload)))
+    logging.info(events_json)
+
+    bq_ops.insert_to_bq(events_json, payload["destination"])
+
+if __name__ == "__main__":
+    asyncio.run(main())

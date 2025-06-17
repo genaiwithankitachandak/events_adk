@@ -23,10 +23,11 @@ from typing import Optional
 from google.genai import types
 import json
 from .prompts import LLM_AGENT_PROMPT
+from utils.bq_ops import BQOps
 
 
 class EventsInput(BaseModel):
-    destination: str = Field(description="Event location.")
+    destination: str = Field(description="Event city.")
     start_date: str = Field(description="Event start date in mm/dd/yy format.")
     end_date: str = Field(description="Event end date in mm/dd/yy format.")
     event: Optional[str] = Field(description="Event name.")
@@ -38,7 +39,7 @@ class Event(BaseModel):
     description: str = Field(description="Event description.")
     start_date: str = Field(description="Event start date in mm/dd/yy format.")
     end_date: str = Field(description="Event end date in mm/dd/yy format.")
-    location: str = Field(description="Event location.")
+    location: str = Field(description="Location of the event where it's taking place.")
     url: str = Field(description="Event URL link. Include ticket links, info links etc.")
     category: str = Field(description="Event category.")
 
@@ -73,7 +74,7 @@ url_fetch_agent = LlmAgent(
     model="gemini-2.0-flash",
     name="url_fetch_agent",
     description="Get url for each event from EventsOutput",
-    instruction="You are an agent that get unique_id values for each event and returns respose in same format. Everytime call `map_tool` to get unique_id for the event using key as `formatted_data`.",
+    instruction="You are an agent that get event url values for each event and returns respose in same format.",
     input_schema=EventsOutput)
 
 

@@ -18,50 +18,51 @@ import uuid
 import logging
 from google.cloud import bigquery
 from datetime import datetime
-
+from utils.places import get_place_id
 
 logging.getLogger().setLevel(logging.INFO)
 
 class BQOps:
     def __init__(self):
-    """
-    Initializes the BigQuery client to store events data.
-    """
-    self.bq_client = bq.Client(project=os.getenv("GOOGLE_CLOUD_PROJECT"))
+        """
+        Initializes the BigQuery client to store events data.
+        """ 
+        self.bq_client = bigquery.Client(project=os.getenv("GOOGLE_CLOUD_PROJECT"))
 
-    # Optional to add it to BQ table for reference run.
-    self.run_id = str(uuid.uuid4()).replace('-', '')
+        # Optional to add it to BQ table for reference run.
+        self.run_id = str(uuid.uuid4()).replace('-', '')
+
+    def format_json_for_bq(self, events_json):
+        """
+        Format json data for BQ table.
+        1. Format json and strip extra strings
+        2. Add unique ID based on location and event start date and end  date
+        3. Use Google places API to get unique id for a location
+
+        Assumption for unique_id : At a given location there will be one event of given category in the given date range.
+        """
+        events_json = events_json.lstrip("```json")
+        events_json = events_json.rstrip("```")
+        json_data = json.loads(events_json)
+        for event in json_data['events']:
+            unique_id = get_place_id(event['location'])
+            event['unique_id'] = f"{unique_id}_{event['start_date']}_{event['end_date']}"
+
+        return json_data
 
 
-    def insert_to_bq(json_data):
+    def insert_to_bq(self, json_data, destination_airport_code):
         """
         Insert events data to BQ
         """
         table_id = os.getenv("EVENTS_DATA_TABLE")
 
+        json_data = self.format_json_for_bq(json_data)
+
         rows_to_insert = []
-        for event in json_data["events"]:
-            # Optional
-            # Convert date strings to datetime.date objects
-            # BigQuery DATE type expects Python date objects
-            start_date_obj = None
-            if event["start_date"]:
-                try:
-                    start_date_obj = datetime.strptime(event["start_date"], "%m/%d/%Y").date()
-                except ValueError:
-                    logging.Warning(f"Warning: Could not parse start_date '{event['start_date']}' for event '{event['name']}'. Setting to None.")
-
-            end_date_obj = None
-            if event["end_date"]:
-                try:
-                    end_date_obj = datetime.strptime(event["end_date"], "%m/%d/%Y").date()
-                except ValueError:
-                    logging.Warning(f"Warning: Could not parse end_date '{event['end_date']}' for event '{event['name']}'. Setting to None.")
-
-            # Prepare the row dictionary, ensuring keys match BigQuery column names.
-            # if the BQ column is STRING, we convert None to None, and other types to string.
+        for event in json_data["events"]:          
             row = {
-                "destination": payload["destination"],
+                "destination": destination_airport_code,
                 "name": event["name"],
                 "description": event["description"],
                 "start_date": event["start_date"],
@@ -69,6 +70,7 @@ class BQOps:
                 "location": event["location"],
                 "url": event["url"],
                 "category": event["category"],
+                "id": event["unique_id"]
             }
             rows_to_insert.append(row)
 
