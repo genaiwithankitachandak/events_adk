@@ -49,7 +49,20 @@ Before you begin, ensure you have the following:
 
 Install the necessary Python libraries using pip:
 
-\pip install -r requirements.text
+`pip install -r requirements.txt`
+
+### **Running**
+
+`python main.py`
+
+Main runs the code in following order
+
+*  Creates session for agent
+* Creates agent runner and calls with agent with root_agent
+* Call sequential agents in a flow and returns result in json format
+* Calls places API to generate unique IDs for events
+* Updates BQ DB with latest events for given destination location and date range.
+
 
 ## **Agent Details**
 
@@ -96,8 +109,6 @@ To run the agent and insert data into BigQuery:
  
 3. **Insert data to BigQuery**:  
    \# Ensure events\_json is properly parsed before calling insert\_to\_bq  
-   events\_json \= events\_json.lstrip("\`\`\`json").rstrip("\`\`\`")  
-   json\_data \= json.loads(events\_json)  
    insert\_to\_bq(table\_id, json\_data)
 
 ## **License**
