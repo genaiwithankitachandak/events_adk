@@ -51,18 +51,46 @@ Install the necessary Python libraries using pip:
 
 `pip install -r requirements.txt`
 
-### **Running**
+### **Running Locally**
 
-`python main.py`
+```bash
+python main.py
+```
 
-Main runs the code in following order
+`main.py` runs the code in the following order:
+* Creates a session for the agent.
+* Initializes the agent runner with `root_agent`.
+* Executes the sequential pipeline and returns results as JSON.
+* Generates unique IDs using the Google Places API.
+* Inserts the results into your BigQuery table.
 
-*  Creates session for agent
-* Creates agent runner and calls with agent with root_agent
-* Call sequential agents in a flow and returns result in json format
-* Calls places API to generate unique IDs for events
-* Updates BQ DB with latest events for given destination location and date range.
+## **Cloud Deployment (Google Cloud Run)**
 
+The agent is designed for easy deployment to Google Cloud Run using Terraform.
+
+### **Deployment Steps**
+Detailed deployment instructions can be found in [terraform/README_TF.md](terraform/README_TF.md). 
+
+Summary:
+1. **Infrastructure Setup**: Use Terraform to create the BigQuery table, Artifact Registry, and Cloud Run service.
+2. **Build Image**: Use Google Cloud Build to build the container and push it to the registry.
+3. **Deploy**: Re-run `terraform apply` to point the Cloud Run service to your new image.
+
+### **Triggering the Agent (API)**
+Once deployed, you can trigger a run by sending a POST request to the `/run` endpoint of your Cloud Run service.
+
+**Example Curl Command:**
+```bash
+curl -X POST https://events-agent-service-rucvkjrn2q-uc.a.run.app/run \
+     -H "Content-Type: application/json" \
+     -d '{
+       "destination": "SEA",
+       "start_date": "07/15/2025",
+       "end_date": "07/31/2025"
+     }'
+```
+
+This will trigger the agent search and automatically insert the found events into BigQuery.
 
 ## **Agent Details**
 
@@ -93,23 +121,8 @@ The system consists of a sequential agent pipeline:
 
 The insert\_to\_bq function handles inserting the processed event data into your specified BigQuery table. It converts date strings to datetime.date objects suitable for BigQuery's DATE type.
 
-## **Usage**
-
-To run the agent and insert data into BigQuery:
-
-1. **Define your query payload**:  
-   payload \= {  
-       "destination": "SEA", \# e.g., "NYC", "London"  
-       "start\_date": "06/15/2025",  
-       "end\_date": "06/30/2025",  
-       "event": "Grand Prix" \# Optional  
-   }
-
-2. **Call the agent**:  
- 
-3. **Insert data to BigQuery**:  
-   \# Ensure events\_json is properly parsed before calling insert\_to\_bq  
-   insert\_to\_bq(table\_id, json\_data)
+## **How it Works**
+The agent uses a combination of Search Grounding and LLMs to find events. Once found, it validates the locations, fetches unique IDs via the Google Places API, and performs a batch insertion into BigQuery.
 
 ## **License**
 

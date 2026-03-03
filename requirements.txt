@@ -1,1 +1,8 @@
 google_adk
+google-cloud-bigquery
+google-genai
+fastapi
+uvicorn
+pydantic
+python-dotenv
+requests

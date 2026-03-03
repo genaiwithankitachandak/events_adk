@@ -82,3 +82,5 @@ root_agent = SequentialAgent(
     name="EventPipelineAgent",
     sub_agents=[events_agent, event_formatter_agent, url_fetch_agent]
 )
+
+agent = root_agent
