@@ -92,6 +92,18 @@ curl -X POST https://events-agent-service-rucvkjrn2q-uc.a.run.app/run \
 
 This will trigger the agent search and automatically insert the found events into BigQuery.
 
+## **Continuous Integration & Deployment (CI/CD)**
+
+This repository includes a GitHub Action in `.github/workflows/deploy.yml` that automatically builds and deploys your agent to Cloud Run whenever you push to the `main` branch.
+
+### **GitHub Secrets Setup**
+To enable this, you must add the following **Secrets** to your GitHub Repository settings (`Settings > Secrets and variables > Actions`):
+
+1.  **`GCP_PROJECT_ID`**: Your Google Cloud Project ID (e.g., `experiments-435323`).
+2.  **`GCP_SA_KEY`**: The JSON key for a Service Account with permissions to use Cloud Build, Artifact Registry, and Cloud Run.
+
+> **Tip**: You can use the same Service Account created by Terraform (`events-agent-sa`), but you will need to generate and download a JSON key for it from the GCP Console.
+
 ## **Agent Details**
 
 The system consists of a sequential agent pipeline:
