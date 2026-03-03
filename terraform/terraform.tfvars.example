@@ -1,0 +1,6 @@
+project_id              = "your-project-id"
+region                  = "us-central1"
+dataset_id              = "events_agent_dataset"
+table_id                = "events_data"
+google_places_api_key   = "your-places-api-key"
+image_name              = "events-agent"
