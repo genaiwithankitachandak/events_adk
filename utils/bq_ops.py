@@ -89,3 +89,39 @@ class BQOps:
                 logging.info(f"Successfully inserted {len(rows_to_insert)} rows into {table_id}.")
         except Exception as e:
             logging.error(f"An unexpected error occurred during insertion: {e}")
+
+    def get_events(self, destination=None, start_date=None, end_date=None):
+        """
+        Retrieve events data from BQ based on optional filters.
+        """
+        table_id = os.getenv("EVENTS_DATA_TABLE")
+        query = f"SELECT * FROM `{table_id}` WHERE 1=1"
+        
+        query_params = []
+        if destination:
+            query += " AND destination = @destination"
+            query_params.append(bigquery.ScalarQueryParameter("destination", "STRING", destination))
+        if start_date:
+            # Note: start_date is a STRING in the schema
+            query += " AND start_date >= @start_date"
+            query_params.append(bigquery.ScalarQueryParameter("start_date", "STRING", start_date))
+        if end_date:
+            query += " AND end_date <= @end_date"
+            query_params.append(bigquery.ScalarQueryParameter("end_date", "STRING", end_date))
+            
+        job_config = bigquery.QueryJobConfig(query_parameters=query_params)
+        
+        try:
+            query_job = self.bq_client.query(query, job_config=job_config)
+            results = query_job.result()
+            # Convert QueryResults to dicts and fix timestamp formats
+            events = []
+            for row in results:
+                row_dict = dict(row)
+                if 'timestamp' in row_dict and row_dict['timestamp']:
+                    row_dict['timestamp'] = row_dict['timestamp'].isoformat()
+                events.append(row_dict)
+            return events
+        except Exception as e:
+            logging.error(f"Error querying events: {e}")
+            return []

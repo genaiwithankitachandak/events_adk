@@ -5,6 +5,7 @@ import asyncio
 from pydantic import BaseModel
 from fastapi import FastAPI
 import uvicorn
+from typing import Optional
 
 # Setup logging immediately
 logging.basicConfig(
@@ -61,6 +62,19 @@ async def trigger_run(payload: RunPayload):
     
     get_bq_ops().insert_to_bq(events_json, payload.destination)
     return {"status": "success", "message": "Agent execution and BQ insertion completed."}
+
+@app.get("/events")
+async def get_events(destination: Optional[str] = None, start_date: Optional[str] = None, end_date: Optional[str] = None):
+    """
+    Retrieve events from BigQuery based on optional filters.
+    """
+    logger.info(f"Retrieving events with destination={destination}, start_date={start_date}, end_date={end_date}")
+    try:
+        events = get_bq_ops().get_events(destination=destination, start_date=start_date, end_date=end_date)
+        return {"status": "success", "count": len(events), "events": events}
+    except Exception as e:
+        logger.error(f"Error in GET /events: {e}", exc_info=True)
+        return {"status": "error", "message": "Failed to retrieve events"}
 
 async def main():
     payload = {

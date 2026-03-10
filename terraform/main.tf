@@ -9,7 +9,8 @@ resource "google_project_service" "apis" {
     "run.googleapis.com",
     "bigquery.googleapis.com",
     "artifactregistry.googleapis.com",
-    "aiplatform.googleapis.com"
+    "aiplatform.googleapis.com",
+    "secretmanager.googleapis.com"
   ])
   service            = each.key
   disable_on_destroy = false
@@ -74,6 +75,26 @@ resource "google_project_iam_member" "aiplatform_user" {
   member  = "serviceAccount:${google_service_account.agent_sa.email}"
 }
 
+# --- Secret Manager ---
+resource "google_secret_manager_secret" "places_api_key_secret" {
+  secret_id = "places_api_key"
+  replication {
+    auto {}
+  }
+  depends_on = [google_project_service.apis]
+}
+
+resource "google_secret_manager_secret_version" "places_api_key_version" {
+  secret      = google_secret_manager_secret.places_api_key_secret.id
+  secret_data = var.google_places_api_key
+}
+
+resource "google_secret_manager_secret_iam_member" "secret_access" {
+  secret_id = google_secret_manager_secret.places_api_key_secret.id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.agent_sa.email}"
+}
+
 # --- Cloud Run ---
 resource "google_cloud_run_v2_service" "events_agent_service" {
   name     = "events-agent-service"
@@ -94,12 +115,17 @@ resource "google_cloud_run_v2_service" "events_agent_service" {
         value = var.region
       }
       env {
-        name  = "EVENTS_DATA_TABLE"
+        name = "EVENTS_DATA_TABLE"
         value = "${var.project_id}.${var.dataset_id}.${var.table_id}"
       }
       env {
-        name  = "GOOGLE_PLACES_API_KEY"
-        value = var.google_places_api_key
+        name = "GOOGLE_PLACES_API_KEY"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.places_api_key_secret.secret_id
+            version = "latest"
+          }
+        }
       }
       env {
         name  = "GOOGLE_GENAI_USE_VERTEXAI"
