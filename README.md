@@ -101,6 +101,7 @@ To enable this, you must add the following **Secrets** to your GitHub Repository
 
 1.  **`GCP_PROJECT_ID`**: Your Google Cloud Project ID (e.g., `experiments-435323`).
 2.  **`GCP_SA_KEY`**: The JSON key for a Service Account with permissions to use Cloud Build, Artifact Registry, and Cloud Run.
+3.  **`GOOGLE_PLACES_API_KEY`**: Your Google Places API key, which Terraform will store securely in Google Cloud Secret Manager.
 
 > **Tip**: You can use the same Service Account created by Terraform (`events-agent-sa`), but you will need to generate and download a JSON key for it from the GCP Console.
 
