@@ -29,12 +29,18 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run Tests
+      - name: Run Tests with Coverage
         env:
           GOOGLE_CLOUD_PROJECT: test-project # Dummy project for testing
           PYTHONPATH: .
         run: |
-          pytest tests/
+          pytest --cov=. --cov-report=xml --cov-report=term tests/
+          
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml
 
   deploy:
     runs-on: ubuntu-latest
