@@ -55,8 +55,10 @@ events_agent = LlmAgent(
     instruction=LLM_AGENT_PROMPT,
     tools=[google_search],
     generate_content_config=types.GenerateContentConfig(
-        temperature=0.2 # More deterministic output
+        temperature=0.2, # More deterministic output
+        http_options=types.HttpOptions(timeout=60000) # 60 seconds
     ),
+
     input_schema=EventsInput,
     output_key="DATA"
 )

@@ -46,10 +46,16 @@ async def setup_session(USER_ID, SESSION_ID):
     print(f"Runner created for agent '{runner.agent.name}'.")
     return runner, session
 
+_RESPONSE_CACHE = {}
+
 async def call_agent(query):
     """
     Helper function to call the agent with a query.
     """
+    if query in _RESPONSE_CACHE:
+        print(f"Returning cached response for query: {query[:100]}...")
+        return _RESPONSE_CACHE[query]
+
     uid = uuid.uuid4() 
     USER_ID = "user_{uid}"
     SESSION_ID = "session_{uid}"
@@ -60,8 +66,7 @@ async def call_agent(query):
     for event in events:
         if event.is_final_response():
             if event.author == "url_fetch_agent" and event.content and event.content.parts:
-            # For output_schema, the content is the JSON string itself
               print("Author:", event.author)
               final_response = event.content.parts[0].text
-            #   print("Agent Response: ", final_response)
+              _RESPONSE_CACHE[query] = final_response
               return final_response
